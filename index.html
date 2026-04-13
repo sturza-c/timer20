@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Timer 20 min</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: #f4f3f1;
+    font-family: 'Cormorant Garamond', serif;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    gap: 32px;
+  }
+
+  .digits {
+    font-size: clamp(80px, 18vw, 160px);
+    font-weight: 300;
+    color: #3a3a3a;
+    letter-spacing: 0.05em;
+    line-height: 1;
+    transition: color 0.5s;
+  }
+  .digits.warning { color: #b8860b; }
+  .digits.urgent  { color: #8b2020; }
+
+  .buttons {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .btn {
+    font-family: 'Cormorant Garamond', serif;
+    font-size: clamp(16px, 3vw, 22px);
+    letter-spacing: 0.1em;
+    padding: 12px 52px;
+    border: 1px solid #3a3a3a;
+    background: #3a3a3a;
+    color: #f4f3f1;
+    cursor: pointer;
+    transition: all 0.2s;
+    width: 220px;
+  }
+  .btn:hover { background: transparent; color: #3a3a3a; }
+
+  .btn-reset {
+    background: transparent;
+    color: #3a3a3a;
+    font-size: clamp(13px, 2vw, 17px);
+    padding: 9px 32px;
+    border-color: #aaa;
+    color: #888;
+    display: none;
+  }
+  .btn-reset:hover { background: #888; color: #f4f3f1; border-color: #888; }
+
+  .done {
+    display: none;
+    font-size: clamp(40px, 10vw, 80px);
+    font-weight: 600;
+    color: #3a3a3a;
+    animation: pulse 1.2s ease-in-out infinite;
+  }
+
+  @keyframes pulse {
+    0%,100% { opacity:1; }
+    50%      { opacity:0.3; }
+  }
+</style>
+</head>
+<body>
+
+<div class="digits" id="t">20:00</div>
+<div class="done" id="done">Reprise !</div>
+
+<div class="buttons">
+  <button class="btn" id="btn" onclick="toggle()">Démarrer</button>
+  <button class="btn btn-reset" id="rst" onclick="reset()">Reset</button>
+</div>
+
+<script>
+  const TOTAL = 20 * 60;
+  let left = TOTAL, iv = null, running = false;
+
+  const tEl = document.getElementById('t');
+  const btn = document.getElementById('btn');
+  const rst = document.getElementById('rst');
+  const done = document.getElementById('done');
+
+  function fmt(s) {
+    return `${String(Math.floor(s/60)).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+  }
+
+  function update() {
+    tEl.textContent = fmt(left);
+    const w = left <= 60, v = left <= 5*60 && !w;
+    tEl.className = 'digits' + (w ? ' urgent' : v ? ' warning' : '');
+  }
+
+  function toggle() {
+    if (running) {
+      clearInterval(iv); running = false; btn.textContent = 'Reprendre';
+    } else {
+      running = true; btn.textContent = 'Pause';
+      rst.style.display = 'block';
+      done.style.display = 'none';
+      tEl.style.display = 'block';
+      btn.style.display = 'block';
+      iv = setInterval(() => {
+        left--;
+        update();
+        if (left <= 0) {
+          clearInterval(iv); running = false;
+          tEl.style.display = 'none';
+          btn.style.display = 'none';
+          done.style.display = 'block';
+          rst.style.display = 'block';
+        }
+      }, 1000);
+    }
+  }
+
+  function reset() {
+    clearInterval(iv); running = false;
+    left = TOTAL;
+    update();
+    btn.textContent = 'Démarrer';
+    btn.style.display = 'block';
+    rst.style.display = 'none';
+    done.style.display = 'none';
+    tEl.style.display = 'block';
+  }
+
+  update();
+</script>
+</body>
+</html>
